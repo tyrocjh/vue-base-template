@@ -1,0 +1,74 @@
+@mixin clearfix {
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+/**
+* 溢出省略号
+* @param {Number} 行数
+*/
+@mixin ellipsis($rowCount: 1) {
+  @if $rowCount <=1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: $rowCount;
+    -webkit-box-orient: vertical;
+  }
+}
+
+@mixin triangle($dir, $size: 10px 10px, $color: currentColor) {
+  content:"";
+  display: inline-block;
+  border-width: 0;
+  border-color: transparent;
+  border-style: solid;
+
+  @if $dir == top {
+    border-bottom-color: $color;
+    border-bottom-width: nth($size, 2);
+    border-left-width: nth($size, 1) / 2;
+    border-right-width: nth($size, 1) / 2;
+  }
+  @else if $dir == bottom {
+    border-top-color: $color;
+    border-top-width: nth($size, 2);
+    border-left-width: nth($size, 1) / 2;
+    border-right-width: nth($size, 1) / 2;
+  }
+  @else if $dir == left {
+    border-right-color: $color;
+    border-right-width: nth($size, 1);
+    border-top-width: nth($size, 2) / 2;
+    border-bottom-width: nth($size, 2) / 2;
+  }
+  @else if $dir == right {
+    border-left-color: $color;
+    border-left-width: nth($size, 1);
+    border-top-width: nth($size, 2) / 2;
+    border-bottom-width: nth($size, 2) / 2;
+  }
+}
+
+@mixin scrollBar {
+  &::-webkit-scrollbar-track-piece {
+    background: #d3dce6;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #99a9bf;
+    border-radius: 20px;
+  }
+}
