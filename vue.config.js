@@ -1,6 +1,7 @@
 'use strict'
 
 const path = require('path')
+const SkeletonWebpackPlugin = require('vue-skeleton-webpack-plugin')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -9,35 +10,74 @@ function resolve(dir) {
 const port = process.env.port || 8080
 
 module.exports = {
-  publicPath: '/',
+  publicPath: './',
   outputDir: 'dist',
-  assetsDir: 'static',
-  productionSourceMap: false,
-  configureWebpack: {
-    resolve: {
-      alias: {
-        '@': resolve('src')
-      }
-    }
-  },
-  devServer: {
-    port: port,
-    overlay: {
-      warnings: false,
-      errors: true
-    },
-    proxy: {
-      [process.env.VUE_APP_BASE_API]: {
-        target: 'https://api.it120.cc/justcook/',
-        changeOrigin: true,
-        pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API]: ''
-        }
-      }
-    }
-  },
+  productionSourceMap: false, // 生产环境不需要source map
+  css: {
+    extract: {
+      filename: 'styles/[name].[contenthash:8].css',
+      chunkFilename: 'styles/[name].[contenthash:8].css'
+    }
+  },
+  configureWebpack(config) {
+    if (process.env.NODE_ENV !== 'development') {
+      config.output.filename = 'scripts/[name].[contenthash:8].js'
+      config.output.chunkFilename = 'scripts/[name].[contenthash:8].js'
+    } else {
+      config.output.filename = 'scripts/[name].[hash:8].js'
+      config.output.chunkFilename = 'scripts/[name].[hash:8].js'
+    }
+  },
   chainWebpack(config) {
-    // set svg-sprite-loader
+    // 别名
+    config.resolve.alias
+      .set('@', resolve('src'))
+
+    // 骨架屏配置
+    config
+      .plugin('SkeletonWebpackPlugin')
+      .use(new SkeletonWebpackPlugin({
+        webpackConfig: {
+          entry: {
+            app: resolve('src/skeleton.js'),
+          }
+        },
+        minimize: true,
+        quiet: true,
+        router: {
+          mode: 'history',
+          routes: [{
+            path: '/',
+            skeletonId: 'skeleton1'
+          }, {
+            path: '/about',
+            skeletonId: 'skeleton2'
+          }]
+        }
+      }))
+
+    // 去掉元素间的空格，减少文件体积
+    config.module
+      .rule('vue')
+      .use('vue-loader')
+      .loader('vue-loader')
+      .tap(options => {
+        options.compilerOptions.preserveWhitespace = true
+        return options
+      })
+      .end()
+
+    // 修改图片打包路径
+    config.module
+      .rule('images')
+      .test(/\.(png|jpe?g|gif|webp)(\?.*)?$/)
+      .use('url-loader')
+      .loader('file-loader')
+      .options({
+        name: 'images/[name].[hash:8].[ext]'
+      })
+
+    // svg-sprite-loader
     config.module
       .rule('svg')
       .exclude.add(resolve('src/icons'))
@@ -51,17 +91,6 @@ module.exports = {
       .loader('svg-sprite-loader')
       .options({
         symbolId: 'icon-[name]'
-      })
-      .end()
-
-    // set preserveWhitespace
-    config.module
-      .rule('vue')
-      .use('vue-loader')
-      .loader('vue-loader')
-      .tap(options => {
-        options.compilerOptions.preserveWhitespace = true
-        return options
       })
       .end()
 
@@ -109,5 +138,21 @@ module.exports = {
           config.optimization.runtimeChunk('single')
         }
       )
-  }
+  },
+  devServer: {
+    port: port,
+    overlay: {
+      warnings: false,
+      errors: true
+    },
+    proxy: {
+      [process.env.VUE_APP_BASE_API]: {
+        target: 'https://api.it120.cc/justcook/',
+        changeOrigin: true,
+        pathRewrite: {
+          ['^' + process.env.VUE_APP_BASE_API]: ''
+        }
+      }
+    }
+  },
 }
