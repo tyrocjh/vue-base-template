@@ -1,5 +1,5 @@
 <template>
-  <div class="about">
+  <div class="api-test">
     <span @click="handleScan">扫一扫</span>
     <br /><br />
     <span @click="handleNfc">读取NFC</span>
@@ -10,7 +10,7 @@
 
 <script>
 export default {
-  name: 'About',
+  name: 'ApiTest',
   data() {
     return {
       ua: '',
